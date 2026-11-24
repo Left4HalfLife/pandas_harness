@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pandas Harness | Data workspace</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+  <script src="{{ url_for('static', filename='app.js') }}" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/"><span class="brand-icon">ph</span><span>Pandas Harness<small>YOUR DATA, IN FOCUS</small></span></a>
+    <div class="top-actions"><span class="privacy-note">Private workspace</span><button id="settings-open" class="button secondary">AI settings <span id="connection-dot" class="dot"></span></button></div>
+  </header>
+  <div class="app-layout">
+    <aside class="files-panel">
+      <div class="panel-label">WORKSPACE <span id="file-count">0</span></div>
+      <h2>Your datasets</h2>
+      <p class="muted">A little structure. A lot of insight.</p>
+      <label id="drop-zone" class="drop-zone" tabindex="0">
+        <span class="upload-icon" aria-hidden="true">&#8593;</span>
+        <strong>Drop your data here</strong>
+        <span>or <span class="link">browse files</span></span>
+        <small>CSV or XLSX &middot; up to 10 MiB</small>
+        <input id="file-input" type="file" accept=".csv,.xlsx" hidden>
+      </label>
+      <div id="datasets" class="dataset-list"></div>
+      <div class="workspace-note"><strong>Built for your questions.</strong><p>Preview your data, explore its shape, then ask AI to connect the dots.</p><span>POWERED BY PANDAS + PANDASAI</span></div>
+    </aside>
+    <main>
+      <div class="workspace-heading"><div><div class="eyebrow">DATA EXPLORER</div><h1 id="dataset-title">Make sense of your data.</h1><p id="dataset-subtitle" class="muted">Start with a spreadsheet. Leave with an insight.</p></div><button id="remove-dataset" class="text-button danger" hidden>Remove dataset</button></div>
+      <div id="empty-state" class="empty-state"><div class="empty-art" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div><h2>Good questions start with data.</h2><p>Upload a CSV or Excel workbook to explore your data<br>and find answers with your own AI model.</p><button id="empty-upload" class="button primary">Upload your first dataset <span aria-hidden="true">&#8599;</span></button><div class="empty-features"><span>Instant previews</span><span>Data quality checks</span><span>Natural-language analysis</span></div></div>
+      <section id="data-view" hidden>
+        <div class="metrics"><article><span>Total rows</span><strong id="metric-rows"></strong><small>records in this dataset</small></article><article><span>Columns</span><strong id="metric-columns"></strong><small>fields to explore</small></article><article><span>Missing values</span><strong id="metric-missing"></strong><small>empty cells across all fields</small></article><article><span>Duplicate rows</span><strong id="metric-duplicates"></strong><small>repeated records</small></article></div>
+        <section class="preview-card"><div class="card-header"><div class="tabs" role="tablist" aria-label="Dataset view"><button id="preview-tab" role="tab" aria-selected="true">Data preview</button><button id="schema-tab" role="tab" aria-selected="false">Column details</button></div><span id="preview-caption" class="muted"></span></div><div id="table-container" class="table-container" tabindex="0"></div><div class="table-footer"><span id="table-note"></span><span>Read-only preview</span></div></section>
+        <div class="insight-tip"><span aria-hidden="true">&#10022;</span><div><strong>From rows to revelations.</strong><p>Ask the assistant to summarize trends, compare groups, or create a chart.</p></div></div>
+      </section>
+      <div id="status" class="status" role="status" aria-live="polite"></div>
+    </main>
+    <aside class="chat-panel">
+      <div class="chat-heading"><span class="spark" aria-hidden="true">&#10022;</span><div><h2>Data assistant</h2><span id="model-label">Connect your AI model</span></div><span class="ai-badge">AI</span></div>
+      <div id="chat-messages" class="chat-messages" aria-live="polite"></div>
+      <div id="chat-intro" class="chat-intro"><span class="intro-icon" aria-hidden="true">&#10022;</span><h3>Meet your data's<br>new thinking partner.</h3><p>Ask in plain English. Get answers grounded in your spreadsheet.</p><div class="suggestions"><button data-question="Give me an overview of this dataset.">Give me a quick overview <span>&#8599;</span></button><button data-question="What trends or outliers stand out in this data?">Find trends and outliers <span>&#8599;</span></button><button data-question="Create a chart that illustrates an interesting pattern in this dataset.">Visualize something interesting <span>&#8599;</span></button></div></div>
+      <form id="chat-form" class="chat-form"><label class="sr-only" for="question">Ask about your data</label><textarea id="question" placeholder="Ask a question about your data..." rows="3" maxlength="4000" required></textarea><div><span id="chat-context">No dataset selected</span><button id="send" class="send-button" type="submit" aria-label="Send question">&#8593;</button></div></form>
+      <p class="chat-disclaimer">AI can make mistakes. Always verify important results.</p>
+    </aside>
+  </div>
+  <dialog id="settings-dialog" aria-labelledby="settings-title">
+    <form id="settings-form">
+      <div class="dialog-heading"><div><div class="eyebrow">BRING YOUR OWN MODEL</div><h2 id="settings-title">AI connection</h2></div><button id="settings-close" type="button" class="close-button" aria-label="Close settings">&times;</button></div>
+      <p class="muted">Connect an OpenAI-compatible endpoint or keep it local with LM Studio.</p>
+      <label for="provider">Provider</label><select id="provider"><option value="openai">OpenAI-compatible</option><option value="local">LM Studio / local server</option></select>
+      <label for="endpoint">API base URL</label><input id="endpoint" type="url" required placeholder="https://api.openai.com/v1" autocomplete="off">
+      <p class="field-help">Include /v1 (or your provider's API path). In Docker, use host.docker.internal instead of localhost for a host-based server.</p>
+      <label for="api-key">API key <span id="key-state" class="muted"></span></label><input id="api-key" type="password" autocomplete="new-password" placeholder="Enter your API key" maxlength="4096">
+      <p class="field-help">Write-only: never returned to your browser or saved to disk. Leave blank to keep the key for the same URL. Local servers may not need a key.</p>
+      <button id="discover" type="submit" class="button primary full-width">Connect &amp; list models</button>
+      <label for="model">Model</label><select id="model" disabled><option value="">Discover models first</option></select>
+      <div class="dialog-actions"><button id="forget-key" type="button" class="text-button danger">Forget connection</button><button id="verify" type="button" class="button primary" disabled>Verify model</button></div>
+      <p id="settings-status" class="settings-status" role="status" aria-live="polite"></p>
+      <div class="security-note">Your model receives column names, sample rows and questions. Generated code runs in an isolated worker without your API key. Use only endpoints and datasets you trust.</div>
+    </form>
+  </dialog>
+</body>
+</html>

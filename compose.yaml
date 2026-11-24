@@ -1,0 +1,61 @@
+services:
+  web:
+    build: .
+    ports:
+      - "127.0.0.1:${PORT:-5000}:5000"
+    environment:
+      SECRET_KEY: ${SECRET_KEY:-}
+      AI_PROVIDER: ${AI_PROVIDER:-openai}
+      AI_API_BASE: ${AI_API_BASE:-https://api.openai.com/v1}
+      AI_API_KEY: ${AI_API_KEY:-}
+      AI_MODEL: ${AI_MODEL:-}
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      JOB_DIR: /jobs
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - analysis-jobs:/jobs
+    tmpfs:
+      - /tmp:size=256m,mode=1777
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    pids_limit: 128
+    mem_limit: 1g
+    cpus: 2
+    depends_on:
+      worker:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/health', timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+
+  worker:
+    build: .
+    command: ["python", "worker.py"]
+    network_mode: none
+    environment:
+      JOB_DIR: /jobs
+    volumes:
+      - analysis-jobs:/jobs
+    tmpfs:
+      - /tmp:size=256m,mode=1777
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    pids_limit: 64
+    mem_limit: 768m
+    cpus: 1
+    healthcheck:
+      test: ["CMD", "python", "-c", "import os,time; assert time.time()-os.stat('/tmp/worker-heartbeat').st_mtime < 60"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+volumes:
+  analysis-jobs:
